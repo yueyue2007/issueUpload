@@ -33,7 +33,7 @@ articles.each do |article|
 
 	new_file = File.new("new.xml","w+")
 	doc.write new_file 
-	# 将所有的pdf文件和成一个，并专程html格式
+	# 将所有的pdf文件和成一个，并专程html格式...
 
 
 end
