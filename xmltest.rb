@@ -16,16 +16,18 @@ articles.each do |article|
 
 	#tiqu pdf base64 and save 
 	filename = galley.elements["file"].elements["embed"].attributes["filename"]
-	pdfContent = Base64.decode64(galley.elements["file"].elements["embed"].text )
+	pdf_content = Base64.decode64(galley.elements["file"].elements["embed"].text )
 	File.open(filename,'w+') do |f|
-		f << pdfContent 
+		f << pdf_content 
 	end
-	
+
 	# 将pdf转为html
 	pdf2html = "pdf2htmlEX  "
 	pdf2html << filename
-	# pdf2html << "  temp.html"
-	# system(pdf2html)
+	html_filename = File.basename(filename,".pdf") + ".html"
+	puts html_filename
+	pdf2html << "  "<<html_filename
+	system(pdf2html)
 	# 将html加入到xml中
 
 
