@@ -82,7 +82,7 @@ articles.each do |article|
 	
 
 	# 将html加入到xml中
-	html_galley = Element.new "galley"
+	html_galley = Element.new "htmlgalley"
 	html_galley.attributes["locale"] = "zh_CN"
 	label = html_galley.add_element "label"
 	label.text = "HTML"
@@ -95,7 +95,7 @@ articles.each do |article|
 		embed.text = Base64.encode64(f.read)		
 	end
 
-	article.elements << html_galley	
+	article.insert_before galley, html_galley	
 end
 # 保存到新文件中	
 new_file_name = File.basename(ARGV[0],".xml")
