@@ -1,5 +1,6 @@
 # -*- encoding : utf-8 -*-
 #!/usr/bin/env ruby
+
 require 'rexml/document'
 require 'base64'
 require 'optparse'
