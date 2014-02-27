@@ -1,7 +1,6 @@
 # -*- encoding : utf-8 -*-
 #!/usr/bin/env ruby
 
-
 require 'roo'
 require 'builder'
 require 'base64'
@@ -115,7 +114,7 @@ tree['sections'].each do |section|
   end
 end
 
-print_tree(tree)
+# print_tree(tree)
 
 # 从pdf文件中抽取文章的pdf
 puts "从#{tree['filename']}中提取各篇文章的pdf:"
@@ -128,62 +127,62 @@ tree['sections'].each do |section|
     puts "...第#{from}页---第#{to}页---- #{article['title']}" 
     commstr  += "  cat A#{from}-#{to}  output  #{article['filename']}"
     puts commstr
-    # system(commstr)
+    system(commstr)
   end
 end
 
 
 # #4  生成XML文件
 
-# builder = Builder::XmlMarkup.new
-# builder.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-# builder.declare! :DOCTYPE,:issues,:SYSTEM,"native.dtd"
-# xml = builder.issues do |is|
-#   is.issue(:published=>"true",:identification=>"title",:current=>"false") do |issue|
-#     issue.title("#{tree['title']}",:locale=>"zh_CN")    
-#     issue.access_date(Time.now.strftime("%m-%d-%Y"))
-#     # issue.volume("#{tree['volume']}")
-#     issue.number("#{tree['number']}")
-#     issue.year("#{tree['year']}")
-#     tree['sections'].each do |section_yaml|
-#       issue.section do |section_xml|
-#         section_xml.title("#{section_yaml['title']}",:locale=>"zh_CN")
-#         #section_xml.abbrev("#{section_yaml['abbrev']}",:locale=>"zh_CN")
-#         section_yaml['articles'].each do |article_yaml|
-#           section_xml.article(:locale=>"zh_CN") do |article_xml|
-#             article_xml.title("#{article_yaml['title']}",:locale=>"zh_CN")
-#             article_xml.abstract("#{article_yaml['abstract']}",:locale=>"zh_CN")
-#             article_xml.author(:primary_contact=>"true") do |author|
-#               author.firstname("#{article_yaml['author_CN']}")
-#               author.lastname("#{article_yaml['author_EN']}")
-#               author.email("#{article_yaml['email']}"+"   ")
-#             end
-#             article_xml.date_published(Time.now.strftime("%m-%d-%Y"))
-#             article_xml.galley(:locale=>"zh_CN") do |galley|
-#               galley.label("PDF")
-#               galley.file  do |file|               
-#                 filename = pathname + "/" +article_yaml['filename']
-#                 #puts filename
-#                # p filename
-#                 File.open(filename,'rb') do |f|
-#                   data = f.read
-#                   encode_data = Base64.encode64(data)
-#                   file.embed("#{encode_data}",:filename=>"#{article_yaml['filename']}",:encoding=>"base64",:mime_type=>"application/pdf")
-#                 end                 
-#              end                
-#             end
-#           end
-#         end
-#       end
-#     end
-#   end
-# end
+builder = Builder::XmlMarkup.new
+builder.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
+builder.declare! :DOCTYPE,:issues,:SYSTEM,"native.dtd"
+xml = builder.issues do |is|
+  is.issue(:published=>"true",:identification=>"title",:current=>"false") do |issue|
+    issue.title("#{tree['title']}",:locale=>"zh_CN")    
+    issue.access_date(Time.now.strftime("%m-%d-%Y"))
+    # issue.volume("#{tree['volume']}")
+    issue.number("#{tree['number']}")
+    issue.year("#{tree['year']}")
+    tree['sections'].each do |section_yaml|
+      issue.section do |section_xml|
+        section_xml.title("#{section_yaml['title']}",:locale=>"zh_CN")
+        #section_xml.abbrev("#{section_yaml['abbrev']}",:locale=>"zh_CN")
+        section_yaml['articles'].each do |article_yaml|
+          section_xml.article(:locale=>"zh_CN") do |article_xml|
+            article_xml.title("#{article_yaml['title']}",:locale=>"zh_CN")
+            article_xml.abstract("#{article_yaml['abstract']}",:locale=>"zh_CN")
+            article_xml.author(:primary_contact=>"true") do |author|
+              author.firstname("#{article_yaml['author_CN']}")
+              author.lastname("#{article_yaml['author_EN']}")
+              author.email("#{article_yaml['email']}"+"   ")
+            end
+            article_xml.date_published(Time.now.strftime("%m-%d-%Y"))
+            article_xml.galley(:locale=>"zh_CN") do |galley|
+              galley.label("PDF")
+              galley.file  do |file|               
+                filename = pathname + "/" +article_yaml['filename']
+                #puts filename
+               # p filename
+                File.open(filename,'rb') do |f|
+                  data = f.read
+                  encode_data = Base64.encode64(data)
+                  file.embed("#{encode_data}",:filename=>"#{article_yaml['filename']}",:encoding=>"base64",:mime_type=>"application/pdf")
+                end                 
+             end                
+            end
+          end
+        end
+      end
+    end
+  end
+end
 
 
 xml_file = File.dirname(tree['filename'])+"/"+File.basename(tree['filename'],".pdf")+".xml"
 puts ""
 puts "...生成XML导入文件：  #{xml_file}"
-# File.open(xml_file,"w") {|f| f<<xml}
+File.open(xml_file,"w") {|f| f<<xml}
 
 
 # delete all pdf files of every article
@@ -199,11 +198,11 @@ end
 HOST = '172.16.10.9'
 USER = 'hxltxb'
 
-Net::SSH.start(HOST,USER) do |ssh|  
-  ssh.scp.upload!(xml_file,'./pdfs/') do |ch,name,sent,total|
-    print "\r#{name}: #{(sent.to_f * 100 /total.to_f).to_i}%"
-  end
-end
+# Net::SSH.start(HOST,USER) do |ssh|  
+#   ssh.scp.upload!(xml_file,'./pdfs/') do |ch,name,sent,total|
+#     print "\r#{name}: #{(sent.to_f * 100 /total.to_f).to_i}%"
+#   end
+# end
 
 #  #调用php，导入刊期和文章
 #  phpcommand = " sudo php  /var/www/ojs/tools/importExport.php NativeImportExportPlugin import "
@@ -213,6 +212,7 @@ end
 #  puts "使用如下所示命令将期刊导入到网站中..."
 #  puts phpcommand
 #  system(phpcommand)
+
 
 
 

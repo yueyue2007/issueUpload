@@ -1,19 +1,36 @@
 # -*- encoding : utf-8 -*-
-#!/usr/bin/env ruby
 require 'net/ssh'
-require 'net/scp'
 
 HOST = '172.16.10.9'
 USER = 'hxltxb'
-PASS = 'sjc()XZXY'
+PASSWORD = 'sjc()XZXY' # or use ENV variables?
+commands = 'sudo ls -l'
 
-# execute a command
-Net::SSH.start(HOST,USER,:password => PASS) do |ssh|
-	result = ssh.exec!('sudo ls')
-	puts result
-	ssh.scp.upload!("/home/xinyue/codes/pdftest/201004.xml","/home/hxltxb/pdfs/") do |ch,name,sent,total|
-		print "\r#{name}: #{(sent.to_f*100/total.to_f).to_i}%"
-	end
+Net::SSH.start(HOST, USER, :password => PASSWORD) do |ssh|
+  ssh.open_channel do |channel|
+    channel.request_pty do |ch, success|
+      if success
+        puts "Successfully obtained pty"
+      else
+        puts "Could not obtain pty"
+      end
+    end
+
+    channel.exec(commands) do |ch, success|
+      abort "Could not execute commands!" unless success
+        channel.on_data do |ch, data|
+          puts "#{data}"
+          channel.send_data "#{PASSWORD}\n" if data =~ /password/
+        end
+
+        channel.on_extended_data do |ch, type, data|
+          puts "stderr: #{data}"
+        end
+
+        channel.on_close do |ch|
+          puts "Channel is closing!"
+        end
+      end
+    end
+  ssh.loop
 end
-
-
