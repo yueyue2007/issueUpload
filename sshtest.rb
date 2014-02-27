@@ -3,7 +3,7 @@ require 'net/ssh'
 
 HOST = '172.16.10.9'
 USER = 'hxltxb'
-PASSWORD = 'sjc()XZXY' # or use ENV variables?
+PASSWORD = 'XXXX' # or use ENV variables?
 commands = 'sudo ls -l'
 
 Net::SSH.start(HOST, USER, :password => PASSWORD) do |ssh|
