@@ -11,9 +11,9 @@ require 'net/ssh'
 require 'net/scp'
 
 
-def normalize_encoding(text)
-  text.encode!("UTF-8")
-end
+# def normalize_encoding(text)
+#   text.encode!("UTF-8")
+# end
 
 def  print_tree(tree)
   str  =  %Q{
@@ -72,14 +72,14 @@ oo = Roo::Excelx.new(options[:xlsx_file])
 oo.default_sheet = oo.sheets.first
 
 tree  =  {}
-tree['filename']      =  normalize_encoding(options[:pdf_file])
-tree['title']         =  normalize_encoding(oo.cell(2,'B'))
+tree['filename']      =  options[:pdf_file]
+tree['title']         =  oo.cell(2,'B')
 # tree['volume']        =  oo.cell(3,'B').to_i
 tree['number']        =  oo.cell(3,'B').to_i
 tree['year']          =  oo.cell(4,'B').to_i
 tree['amend']         =  oo.cell(5,'B').to_i
-tree['journal_path']  =  normalize_encoding(oo.cell(6,'B'))
-tree['username']      =  normalize_encoding(oo.cell(7,'B'))
+tree['journal_path']  =  oo.cell(6,'B')
+tree['username']      =  oo.cell(7,'B')
 
 tree['sections']      =  []
 pathname  =  File.dirname(tree['filename']) #暂时不用
@@ -89,16 +89,16 @@ pages = Array.new
 10.upto(oo.last_row) do |row|
   if oo.cell(row,'A')  #是栏目行
     section ={}
-    section['title']  =  normalize_encoding(oo.cell(row,'A'))
+    section['title']  =  oo.cell(row,'A')
     #section['abbr']  =  oo.cell(row,'B')
     section['articles'] = []
     tree['sections'] << section
   else
     article  =  {}
-    article['title']      =  normalize_encoding(oo.cell(row,'B'))
-    article['author_CN']  =  normalize_encoding(oo.cell(row,'D'))
-    article['author_EN']  =  normalize_encoding(oo.cell(row,'E'))
-    article['abstract']   =  normalize_encoding(oo.cell(row,'C'))
+    article['title']      =  oo.cell(row,'B')
+    article['author_CN']  =  oo.cell(row,'D')
+    article['author_EN']  =  oo.cell(row,'E')
+    article['abstract']   =  oo.cell(row,'C')
     article['pages']      =  oo.cell(row,'F').to_i - tree['amend'].to_i
     pages << article['pages']  
     article['email']      = "  "
@@ -136,74 +136,74 @@ tree['sections'].each do |section|
     article['filename']  =  "#{basename}_#{from}_#{to}.pdf"
     puts "...第#{from}页---第#{to}页---- #{article['title']}" 
     commstr  += "  cat A#{from}-#{to}  output  #{article['filename']}"
-    commstr.encode!("GBK")
+    # commstr.encode!("GBK")
     puts commstr
     system(commstr)
   end
 end
 
 
-# # #4  生成XML文件
+# #4  生成XML文件
 
-# builder = Builder::XmlMarkup.new
-# builder.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
-# builder.declare! :DOCTYPE,:issues,:SYSTEM,"native.dtd"
-# xml = builder.issues do |is|
-#   is.issue(:published=>"true",:identification=>"title",:current=>"false") do |issue|
-#     issue.title("#{tree['title']}",:locale=>"zh_CN")    
-#     issue.access_date(Time.now.strftime("%m-%d-%Y"))
-#     # issue.volume("#{tree['volume']}")
-#     issue.number("#{tree['number']}")
-#     issue.year("#{tree['year']}")
-#     tree['sections'].each do |section_yaml|
-#       issue.section do |section_xml|
-#         section_xml.title("#{section_yaml['title']}",:locale=>"zh_CN")
-#         #section_xml.abbrev("#{section_yaml['abbrev']}",:locale=>"zh_CN")
-#         section_yaml['articles'].each do |article_yaml|
-#           section_xml.article(:locale=>"zh_CN") do |article_xml|
-#             article_xml.title("#{article_yaml['title']}",:locale=>"zh_CN")
-#             article_xml.abstract("#{article_yaml['abstract']}",:locale=>"zh_CN")
-#             article_xml.author(:primary_contact=>"true") do |author|
-#               author.firstname("#{article_yaml['author_CN']}")
-#               author.lastname("#{article_yaml['author_EN']}")
-#               author.email("#{article_yaml['email']}"+"   ")
-#             end
-#             article_xml.date_published(Time.now.strftime("%m-%d-%Y"))
-#             article_xml.galley(:locale=>"zh_CN") do |galley|
-#               galley.label("PDF")
-#               galley.file  do |file|               
-#                 filename = pathname + "/" +article_yaml['filename']
-#                 #puts filename
-#                # p filename
-#                 File.open(filename,'rb') do |f|
-#                   data = f.read
-#                   encode_data = Base64.encode64(data)
-#                   file.embed("#{encode_data}",:filename=>"#{article_yaml['filename']}",:encoding=>"base64",:mime_type=>"application/pdf")
-#                 end                 
-#              end                
-#             end
-#           end
-#         end
-#       end
-#     end
-#   end
-# end
+builder = Builder::XmlMarkup.new
+builder.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
+builder.declare! :DOCTYPE,:issues,:SYSTEM,"native.dtd"
+xml = builder.issues do |is|
+  is.issue(:published=>"true",:identification=>"title",:current=>"false") do |issue|
+    issue.title("#{tree['title']}",:locale=>"zh_CN")    
+    issue.access_date(Time.now.strftime("%m-%d-%Y"))
+    # issue.volume("#{tree['volume']}")
+    issue.number("#{tree['number']}")
+    issue.year("#{tree['year']}")
+    tree['sections'].each do |section_yaml|
+      issue.section do |section_xml|
+        section_xml.title("#{section_yaml['title']}",:locale=>"zh_CN")
+        #section_xml.abbrev("#{section_yaml['abbrev']}",:locale=>"zh_CN")
+        section_yaml['articles'].each do |article_yaml|
+          section_xml.article(:locale=>"zh_CN") do |article_xml|
+            article_xml.title("#{article_yaml['title']}",:locale=>"zh_CN")
+            article_xml.abstract("#{article_yaml['abstract']}",:locale=>"zh_CN")
+            article_xml.author(:primary_contact=>"true") do |author|
+              author.firstname("#{article_yaml['author_CN']}")
+              author.lastname("#{article_yaml['author_EN']}")
+              author.email("#{article_yaml['email']}"+"   ")
+            end
+            article_xml.date_published(Time.now.strftime("%m-%d-%Y"))
+            article_xml.galley(:locale=>"zh_CN") do |galley|
+              galley.label("PDF")
+              galley.file  do |file|               
+                filename = pathname + "/" +article_yaml['filename']
+                #puts filename
+               # p filename
+                File.open(filename,'rb') do |f|
+                  data = f.read
+                  encode_data = Base64.encode64(data)
+                  file.embed("#{encode_data}",:filename=>"#{article_yaml['filename']}",:encoding=>"base64",:mime_type=>"application/pdf")
+                end                 
+             end                
+            end
+          end
+        end
+      end
+    end
+  end
+end
 
 
-# xml_file = File.dirname(tree['filename'])+"/"+File.basename(tree['filename'],".pdf")+".xml"
-# puts ""
-# puts "...生成XML导入文件：  #{xml_file}"
-# File.open(xml_file,"w") {|f| f<<xml}
+xml_file = File.dirname(tree['filename'])+"/"+File.basename(tree['filename'],".pdf")+".xml"
+puts ""
+puts "...生成XML导入文件：  #{xml_file}"
+File.open(xml_file,"w") {|f| f<<xml}
 
 
 # # delete all pdf files of every article
-# tree['sections'].each do |section|
-#   section['articles'].each do |article|   
-#    if File.exist?(article['filename'])
-#     system("rm #{article['filename']}".encode!("GBK"))
-#    end
-#   end
-# end
+tree['sections'].each do |section|
+  section['articles'].each do |article|   
+   if File.exist?(article['filename'])
+    system("rm #{article['filename']}".encode!("GBK"))
+   end
+  end
+end
 
 # 上传xml文件到web服务器...
 HOST = '172.16.10.9'
